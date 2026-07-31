@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Landing Page Builder
 
-## Getting Started
+A Next.js (App Router) application that allows users to generate and modify landing pages via conversational AI.
 
-First, run the development server:
+## Setup Instructions
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Clone the repository and install dependencies:
+   ```bash
+   npm install
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Configure environment variables. Copy `.env.example` to `.env` and fill in your credentials:
+   - `DATABASE_URL`: Your Supabase connection string (use port 5432 for Session Pooler).
+   - `OPENROUTER_API_KEY`: Your OpenRouter API key for the AI model.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Push the database schema:
+   ```bash
+   npx prisma db push
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+This project uses a **Server-Driven Architecture**:
+- **Framework**: Next.js App Router (React Server Components + Server Actions).
+- **Database**: PostgreSQL (Supabase) + Prisma ORM.
+- **AI Integration**: OpenRouter (using OpenAI SDK) with Structured Output (Tool Calling).
+- **Styling**: Tailwind CSS + Framer Motion.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application separates concerns strictly:
+- **`app/api/chat`**: The isolated AI engine that handles prompts and tool execution.
+- **`components/sections/`**: The predefined React components that are allowed to be rendered.
+- **`components/registry.ts`**: The bridge that maps JSON type strings to actual React components.
+- **`lib/db/actions.ts`**: Server actions for database operations.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## AI Integration Approach (Partial Revision / Patching)
 
-## Deploy on Vercel
+Instead of forcing the AI to regenerate the entire HTML or JSON for every modification (which is slow and token-expensive), the AI is equipped with a `apply_page_changes` tool. 
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The AI receives the current state of the page (as JSON array) and can emit "patch" instructions:
+- `add` (insert a new component)
+- `update` (modify props of an existing component by ID)
+- `remove` (delete a component by ID)
+- `reorder` (change the order of components)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This ensures fast iterations and zero hallucination of unsupported HTML tags.
+
+## Important Technical Decisions
+
+1. **Structured Outputs (Zod)**: By defining strict interfaces for `Hero`, `Pricing`, etc., the AI is constrained to only output data that matches our frontend schema.
+2. **Component Registry**: The AI only outputs a string `type` (e.g. "Navbar"). The frontend registry looks up the actual React component. This prevents XSS and ensures design consistency.
+3. **Database Schema**: Centralized around a `Project`. Each project has one `LandingPage` (storing the JSON) and many `Conversations` (storing the chat history) to maintain context across sessions.
+
+## Tradeoffs & Known Limitations
+
+- **Streaming JSON**: Currently, the AI tool calls wait for completion before updating the UI. A future enhancement would be streaming the JSON patch for a real-time typing effect on the landing page preview.
+- **Context Limit**: For very large landing pages or extremely long conversations, the token limit of the LLM might be reached. A rolling window of the chat history would be needed for production.
+- **Authentication**: Currently omitted (single-tenant mode) for simplicity of the technical test, but easily expandable using Supabase Auth or Clerk.
