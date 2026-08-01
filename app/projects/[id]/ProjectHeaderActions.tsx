@@ -6,7 +6,11 @@ import {
   Share, 
   Pencil, 
   Trash2,
-  X
+  X,
+  FileCode,
+  FileDown,
+  Download,
+  Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -17,13 +21,20 @@ export function ProjectHeaderActions({ projectId }: { projectId: string }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [renameInput, setRenameInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExportingHtml, setIsExportingHtml] = useState(false);
+  const [isExportingJsx, setIsExportingJsx] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setShowExportDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -77,6 +88,36 @@ export function ProjectHeaderActions({ projectId }: { projectId: string }) {
     const url = `${window.location.origin}/share/${projectId}`;
     navigator.clipboard.writeText(url);
     alert("Public link copied to clipboard!");
+  };
+
+  const handleExportHtml = async () => {
+    setIsExportingHtml(true);
+    setShowExportDropdown(false);
+    try {
+      const a = document.createElement("a");
+      a.href = `/api/export/html?id=${projectId}`;
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } finally {
+      setTimeout(() => setIsExportingHtml(false), 1500);
+    }
+  };
+
+  const handleExportJsx = async () => {
+    setIsExportingJsx(true);
+    setShowExportDropdown(false);
+    try {
+      const a = document.createElement("a");
+      a.href = `/api/export/jsx?id=${projectId}`;
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } finally {
+      setTimeout(() => setIsExportingJsx(false), 1500);
+    }
   };
 
   return (
@@ -200,6 +241,53 @@ export function ProjectHeaderActions({ projectId }: { projectId: string }) {
             >
               <Trash2 className="mr-2 h-3.5 w-3.5 text-red-500" />
               <span>Delete</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Export Dropdown */}
+      <div className="relative" ref={exportDropdownRef}>
+        <button
+          onClick={() => setShowExportDropdown(!showExportDropdown)}
+          title="Export"
+          className={`flex h-9 items-center gap-1.5 px-3 rounded-md border text-xs font-semibold transition-colors cursor-pointer ${
+            showExportDropdown
+              ? "bg-zinc-100 border-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
+              : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+          }`}
+        >
+          {isExportingHtml || isExportingJsx ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Download className="h-3.5 w-3.5" />
+          )}
+          <span>Export</span>
+        </button>
+
+        {showExportDropdown && (
+          <div className="absolute right-0 mt-2 w-52 origin-top-right rounded-xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-200 dark:border-zinc-800 p-1 space-y-1 z-50">
+            <button
+              onClick={handleExportHtml}
+              disabled={isExportingHtml}
+              className="group flex w-full items-center gap-2.5 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <FileDown className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-600 shrink-0" />
+              <div className="text-left">
+                <div className="font-semibold">Download HTML</div>
+                <div className="text-[10px] text-zinc-400 mt-0.5">Self-contained .html file</div>
+              </div>
+            </button>
+            <button
+              onClick={handleExportJsx}
+              disabled={isExportingJsx}
+              className="group flex w-full items-center gap-2.5 px-3 py-2 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <FileCode className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-600 shrink-0" />
+              <div className="text-left">
+                <div className="font-semibold">Export JSX (.zip)</div>
+                <div className="text-[10px] text-zinc-400 mt-0.5">Vite + React project</div>
+              </div>
             </button>
           </div>
         )}

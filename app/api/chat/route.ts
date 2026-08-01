@@ -80,15 +80,38 @@ Your purpose is to create stunning, professional, high-converting landing pages.
 - When changing colors/themes, update EVERY component's bgColor and textColor to match.
 - Choose harmonious, professional color palettes.
 - DO NOT add imageUrl to Hero unless user EXPLICITLY asks for a photo/image.
+- ALWAYS choose the variant that best fits the brand context. Don't always use default variants.
 
-=== PROP SCHEMA (FULL STYLING & DECORATION FLEXIBILITY) ===
-- Navbar: { logoText: string (BRAND NAME), links: [{label, url}], ctaText?: string, bgColor?: string, textColor?: string }
-- Hero: { title: string, subtitle?: string, badgeText?: string (e.g. "✨ PROMO SPECIAL"), accentColor?: string (e.g. "#3b82f6"), primaryCta?: {label, url}, secondaryCta?: {label, url}, layout?: "left"|"center"|"right", bgColor?: string, textColor?: string }
-- Features: { title, subtitle?, items: [{icon, title, description}], bgColor?, textColor? }
-- Pricing: { title, subtitle?, plans: [{name, price, description, features: string[], isPopular?, ctaText}], bgColor?, textColor? }
-- Testimonials: { title, subtitle?, items: [{quote, author, role}], bgColor?, textColor? }
+=== VARIANT GUIDE — choose smartly based on context ===
+- Hero variant:
+  * "centered" (default) — balanced, glowing, works for most brands
+  * "split" — shows stats on the right, great for SaaS/tech/data-driven brands
+  * "minimal" — editorial, typographic, ideal for creative agencies/portfolios
+  * "bold" — dark full-bleed, accent stripe, works for gaming/hype/launch pages
+- Features variant:
+  * "grid" (default) — 3-col cards, works universally
+  * "alternating" — row layout with large icons, great for detailed product explanations
+  * "list" — numbered editorial list, ideal for how-it-works or process steps
+- Pricing variant:
+  * "cards" (default) — vertical plan cards, classic SaaS layout
+  * "compact" — horizontal table, good when plans have many features to compare
+- Testimonials variant:
+  * "grid" (default) — balanced cards for most use cases
+  * "masonry" — large quotes with featured first testimonial, great for luxury/premium brands
+  * "marquee" — auto-scrolling rows, great for high volume of testimonials / social proof
+- CTA variant:
+  * "contained" (default) — dark box, high contrast call to action
+  * "banner" — full-width inline, less intrusive, good for mid-page CTAs
+  * "minimal" — large typographic, no box, feels premium and editorial
+
+=== PROP SCHEMA ===
+- Navbar: { logoText, links: [{label, url}], ctaText?, bgColor?, textColor? }
+- Hero: { variant?: "centered"|"split"|"minimal"|"bold", title, subtitle?, badgeText?, accentColor?, primaryCta?: {label, url}, secondaryCta?: {label, url}, layout?: "left"|"center"|"right", bgColor?, textColor? }
+- Features: { variant?: "grid"|"alternating"|"list", title, subtitle?, items: [{icon, title, description}], bgColor?, textColor? }
+- Pricing: { variant?: "cards"|"compact", title, subtitle?, plans: [{name, price, description, features: string[], isPopular?, ctaText}], bgColor?, textColor? }
+- Testimonials: { variant?: "grid"|"masonry"|"marquee", title, subtitle?, items: [{quote, author, role}], bgColor?, textColor? }
 - FAQ: { title, subtitle?, items: [{question, answer}], bgColor?, textColor? }
-- CTA: { title, subtitle?, buttonText, buttonUrl, bgColor?, textColor? }
+- CTA: { variant?: "contained"|"banner"|"minimal", title, subtitle?, buttonText, buttonUrl, bgColor?, textColor? }
 - Footer: { companyName, text?, links?: [{label, url}], bgColor?, textColor? }
 
 === FEW-SHOT EXAMPLES ===
@@ -98,14 +121,16 @@ Tool Call Output:
   "replyToUser": "Landing page BrewMaster telah berhasil dibuat dengan tema coklat tua & krem!",
   "changes": [
     { "action": "add", "type": "Navbar", "props": { "logoText": "BrewMaster", "bgColor": "#2c1810", "textColor": "#f5e6d3", "links": [{"label": "Beranda", "url": "#"}, {"label": "Menu", "url": "#menu"}] } },
-    { "action": "add", "type": "Hero", "props": { "title": "Cita Rasa Kopi Asli Nusantara", "subtitle": "Disangrai presisi oleh master roaster pilihan.", "bgColor": "#2c1810", "textColor": "#f5e6d3", "primaryCta": {"label": "Pesan Sekarang", "url": "#"} } },
-    { "action": "add", "type": "Features", "props": { "title": "Keunggulan BrewMaster", "bgColor": "#2c1810", "textColor": "#f5e6d3", "items": [{"icon": "Coffee", "title": "Biji Pilihan", "description": "100% Arabika Asli"}, {"icon": "Star", "title": "Roast Presisi", "description": "Aroma sempurna"}] } },
+    { "action": "add", "type": "Hero", "props": { "variant": "minimal", "title": "Cita Rasa Kopi Asli Nusantara", "subtitle": "Disangrai presisi oleh master roaster pilihan.", "bgColor": "#2c1810", "textColor": "#f5e6d3", "primaryCta": {"label": "Pesan Sekarang", "url": "#"} } },
+    { "action": "add", "type": "Features", "props": { "variant": "alternating", "title": "Keunggulan BrewMaster", "bgColor": "#2c1810", "textColor": "#f5e6d3", "items": [{"icon": "Coffee", "title": "Biji Pilihan", "description": "100% Arabika Asli"}, {"icon": "Star", "title": "Roast Presisi", "description": "Aroma sempurna"}] } },
+    { "action": "add", "type": "CTA", "props": { "variant": "banner", "title": "Pesan Sekarang", "buttonText": "Order Sekarang", "buttonUrl": "#", "bgColor": "#2c1810", "textColor": "#f5e6d3" } },
     { "action": "add", "type": "Footer", "props": { "companyName": "BrewMaster Coffee", "bgColor": "#2c1810", "textColor": "#f5e6d3" } }
   ]
 }
 
 CURRENT PAGE STATE:
 ${JSON.stringify(currentPageData, null, 2)}`;
+
 
     const messagesForAi = [
       { role: "system", content: systemPrompt },
@@ -168,6 +193,7 @@ ${JSON.stringify(currentPageData, null, 2)}`;
                           buttonText: { type: "string", description: "Button label" },
                           buttonUrl: { type: "string", description: "Button link URL" },
                           layout: { type: "string", enum: ["left", "center", "right"] },
+                          variant: { type: "string", description: "Layout variant for the component. Hero: centered|split|minimal|bold. Features: grid|alternating|list. Pricing: cards|compact. Testimonials: grid|masonry|marquee. CTA: contained|banner|minimal." },
                           primaryCta: {
                             type: "object",
                             properties: { label: { type: "string" }, url: { type: "string" } },
