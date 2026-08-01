@@ -1,9 +1,95 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, ArrowLeft } from "lucide-react";
+import { Send, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+// ─── Inline Markdown Formatter Component ─────────────────────────────────────
+function FormattedText({ content }: { content: string }) {
+  if (!content) return null;
+
+  const lines = content.split("\n");
+
+  return (
+    <div className="space-y-1">
+      {lines.map((line, idx) => {
+        if (!line.trim()) return <div key={idx} className="h-1" />;
+
+        // Numbered list line (e.g. "1. **Title**: text")
+        const numMatch = line.trim().match(/^(\d+\.)\s+(.*)/);
+        if (numMatch) {
+          const num = numMatch[1];
+          const restStr = numMatch[2];
+          const parts = restStr.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-1 my-1">
+              <span className="font-bold text-blue-500 shrink-0 select-none text-xs mt-0.5">{num}</span>
+              <div className="flex-1">
+                {parts.map((part, pIdx) => {
+                  if (part.startsWith("**") && part.endsWith("**")) {
+                    return <strong key={pIdx} className="font-bold">{part.slice(2, -2)}</strong>;
+                  }
+                  if (part.startsWith("*") && part.endsWith("*")) {
+                    return <em key={pIdx} className="italic opacity-90">{part.slice(1, -1)}</em>;
+                  }
+                  if (part.startsWith("`") && part.endsWith("`")) {
+                    return <code key={pIdx} className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-[11px] font-mono">{part.slice(1, -1)}</code>;
+                  }
+                  return part;
+                })}
+              </div>
+            </div>
+          );
+        }
+
+        // Bullet point line (e.g. "* **Item**" or "- Item")
+        if (line.trim().startsWith("* ") || line.trim().startsWith("- ")) {
+          const bulletContent = line.trim().replace(/^[\*\-]\s+/, "");
+          const parts = bulletContent.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-2 my-0.5">
+              <span className="text-zinc-400 select-none text-xs">•</span>
+              <div className="flex-1">
+                {parts.map((part, pIdx) => {
+                  if (part.startsWith("**") && part.endsWith("**")) {
+                    return <strong key={pIdx} className="font-bold">{part.slice(2, -2)}</strong>;
+                  }
+                  if (part.startsWith("*") && part.endsWith("*")) {
+                    return <em key={pIdx} className="italic opacity-90">{part.slice(1, -1)}</em>;
+                  }
+                  if (part.startsWith("`") && part.endsWith("`")) {
+                    return <code key={pIdx} className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-[11px] font-mono">{part.slice(1, -1)}</code>;
+                  }
+                  return part;
+                })}
+              </div>
+            </div>
+          );
+        }
+
+        // Standard paragraph line
+        const parts = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+        return (
+          <div key={idx}>
+            {parts.map((part, pIdx) => {
+              if (part.startsWith("**") && part.endsWith("**")) {
+                return <strong key={pIdx} className="font-bold">{part.slice(2, -2)}</strong>;
+              }
+              if (part.startsWith("*") && part.endsWith("*")) {
+                return <em key={pIdx} className="italic opacity-90">{part.slice(1, -1)}</em>;
+              }
+              if (part.startsWith("`") && part.endsWith("`")) {
+                return <code key={pIdx} className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-[11px] font-mono">{part.slice(1, -1)}</code>;
+              }
+              return part;
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function SidebarChat({ project, isLoading, setIsLoading }: { project: any; isLoading: boolean; setIsLoading: (v: boolean) => void }) {
   const router = useRouter();
@@ -11,6 +97,7 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
     project.conversations?.[0]?.messages || []
   );
   const [input, setInput] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const brandPool = [
@@ -76,7 +163,7 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isThinking]);
 
   // Auto-generate if canvas is empty and user has submitted an initial prompt
   useEffect(() => {
@@ -86,7 +173,7 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
 
     if (components.length === 0 && lastMsg && lastMsg.role === "user" && !hasTriggeredRef.current) {
       hasTriggeredRef.current = true;
-      setIsLoading(true);
+      setIsThinking(true);
 
       fetch(`/api/chat`, {
         method: "POST",
@@ -106,11 +193,14 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
         .then((data) => {
           if (data.reply) {
             setMessages((prev) => {
-              // Avoid duplicate assistant message if already added
               if (prev.some((m) => m.content === data.reply)) return prev;
               return [...prev, { role: "assistant", content: data.reply }];
             });
-            router.refresh();
+            if (data.hasChanges) {
+              setIsLoading(true);
+              router.refresh();
+              setTimeout(() => setIsLoading(false), 500);
+            }
           }
         })
         .catch((err) => {
@@ -121,19 +211,19 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
           ]);
         })
         .finally(() => {
-          setIsLoading(false);
+          setIsThinking(false);
         });
     }
   }, [project, router, setIsLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isThinking) return;
 
     const userMessage = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
-    setIsLoading(true);
+    setIsThinking(true);
 
     try {
       const response = await fetch(`/api/chat`, {
@@ -159,7 +249,13 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
       const data = await response.json();
       
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
-      router.refresh();
+
+      // Only trigger canvas loading overlay if page changes were actually made
+      if (data.hasChanges) {
+        setIsLoading(true);
+        router.refresh();
+        setTimeout(() => setIsLoading(false), 500);
+      }
     } catch (error: any) {
       console.error(error);
       setMessages((prev) => [
@@ -167,7 +263,7 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
         { role: "assistant", content: `❌ Error: ${error.message || "Please try again."}` }
       ]);
     } finally {
-      setIsLoading(false);
+      setIsThinking(false);
     }
   };
 
@@ -242,18 +338,17 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
                 ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
                 : "bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
             }`}>
-              {msg.content}
+              {msg.role === "user" ? msg.content : <FormattedText content={msg.content} />}
             </div>
           </div>
         ))}
         
-        {isLoading && (
+        {isThinking && (
           <div className="flex items-start">
-            <div className="max-w-[85%] rounded-2xl bg-zinc-100 dark:bg-zinc-900 px-4 py-4">
-              <div className="flex space-x-1.5 items-center h-4">
-                <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="max-w-[85%] rounded-2xl bg-zinc-100 dark:bg-zinc-900 px-4 py-3 border border-zinc-200/50 dark:border-zinc-800/50">
+              <div className="flex items-center gap-2 text-xs text-zinc-500 font-medium">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                <span>Mengetik jawaban...</span>
               </div>
             </div>
           </div>
@@ -261,10 +356,9 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="shrink-0 p-4 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3 shrink-0">
         {visibleMessages.length > 0 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-            <span className="text-[10px] uppercase font-bold text-zinc-400 shrink-0">Coba:</span>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
             <button
               onClick={handleSurpriseMe}
               className="text-[11px] px-2.5 py-1 rounded-full bg-blue-500 text-white font-medium hover:bg-blue-600 shrink-0 transition-colors cursor-pointer shadow-sm"
@@ -313,18 +407,17 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
             }}
             placeholder="Ketik perintah atau klik rekomendasi di atas..."
             className="w-full bg-transparent border-0 px-2 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-0 text-sm resize-none max-h-32 min-h-10"
-            disabled={isLoading}
+            disabled={isThinking}
             rows={1}
           />
           <button
             type="submit"
-            disabled={!input.trim() || isLoading}
-            className="shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 transition-transform active:scale-95 disabled:opacity-50 ml-2 mb-1 cursor-pointer"
+            disabled={!input.trim() || isThinking}
+            className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg disabled:opacity-40 transition-all cursor-pointer shrink-0 ml-2"
           >
-            <Send className="h-4 w-4" />
+            {isThinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </form>
-        <p className="text-center text-[11px] text-zinc-400">Tekan Enter untuk kirim, Shift+Enter untuk baris baru</p>
       </div>
     </div>
   );

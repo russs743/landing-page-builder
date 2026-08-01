@@ -278,6 +278,7 @@ ${JSON.stringify(currentPageData, null, 2)}`;
     const aiMessage = completion.choices[0].message;
     let replyText = "I have updated the page for you.";
     let updatedComponents = [...currentPageData];
+    let hasChanges = false;
 
     if (!aiMessage.tool_calls || aiMessage.tool_calls.length === 0) {
       throw new Error(`Model '${modelName}' tidak mendukung Tool Calling (Function Calling) di OpenRouter.`);
@@ -288,6 +289,9 @@ ${JSON.stringify(currentPageData, null, 2)}`;
         try {
           const args = JSON.parse(toolCall.function.arguments);
           if (args.replyToUser) replyText = args.replyToUser;
+          if (Array.isArray(args.changes) && args.changes.length > 0) {
+            hasChanges = true;
+          }
 
           // normalizeProps is imported from @/lib/utils/normalizeProps
 
@@ -347,7 +351,7 @@ ${JSON.stringify(currentPageData, null, 2)}`;
       },
     });
 
-    return NextResponse.json({ reply: replyText });
+    return NextResponse.json({ reply: replyText, hasChanges });
   } catch (error: any) {
     console.error("API Chat Error:", error);
     return NextResponse.json(
