@@ -11,18 +11,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing projectId or message" }, { status: 400 });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY;
+
+    if (!apiKey) {
       return NextResponse.json({ error: "GEMINI_API_KEY is not configured in .env file." }, { status: 500 });
     }
 
+    const isOpenRouter = apiKey.startsWith("sk-or-v1-") || process.env.AI_PROVIDER === "openrouter";
+    const baseURL = isOpenRouter
+      ? "https://openrouter.ai/api/v1"
+      : "https://generativelanguage.googleapis.com/v1beta/openai/";
+
     const openai = new OpenAI({
-      baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
-      apiKey: process.env.GEMINI_API_KEY,
+      baseURL,
+      apiKey,
     });
 
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
+    const modelsToTry = isOpenRouter
+      ? ["google/gemini-2.0-flash-001", "google/gemini-flash-1.5", "meta-llama/llama-3.3-70b-instruct:free"]
+      : ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro"];
 
-    console.log(`[API CHAT] Calling Google Gemini API for prompt: "${message}"`);
+    console.log(`[API CHAT] Calling ${isOpenRouter ? "OpenRouter" : "Google Gemini"} API for prompt: "${message}"`);
 
     // 1. Fetch project data
     const project = await prisma.project.findUnique({
@@ -282,8 +291,8 @@ ${JSON.stringify(currentPageData, null, 2)}`;
           lastError = err;
           const is429 = err?.status === 429 || String(err?.message || "").includes("429");
           if (is429 && attempt < 2) {
-            console.warn(`[API CHAT] Rate limit 429 on ${targetModel}, retrying in 2s...`);
-            await new Promise((res) => setTimeout(res, 2000));
+            console.warn(`[API CHAT] Rate limit 429 on ${targetModel}, retrying in 3s...`);
+            await new Promise((res) => setTimeout(res, 3000));
           } else {
             console.warn(`[API CHAT] Model ${targetModel} failed (${err?.message || err}). Trying fallback model...`);
             break;
