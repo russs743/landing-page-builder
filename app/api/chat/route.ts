@@ -20,9 +20,9 @@ export async function POST(req: NextRequest) {
       apiKey: process.env.GEMINI_API_KEY,
     });
 
-    const modelName = "gemini-3.5-flash";
+    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
 
-    console.log(`[API CHAT] Calling Google Gemini API (${modelName}) for prompt: "${message}"`);
+    console.log(`[API CHAT] Calling Google Gemini API for prompt: "${message}"`);
 
     // 1. Fetch project data
     const project = await prisma.project.findUnique({
@@ -156,132 +156,145 @@ ${JSON.stringify(currentPageData, null, 2)}`;
       { role: "user", content: message },
     ];
 
-    // 4. Call AI with retry for rate limits (429)
+    // 4. Call AI with model fallback and rate limit retry
     let completion: any;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        completion = await openai.chat.completions.create({
-          model: modelName,
-          messages: messagesForAi as any,
-          max_tokens: 4096,
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "apply_page_changes",
-                description: "Apply changes to the landing page. MUST populate all props with real content.",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    replyToUser: {
-                      type: "string",
-                      description: "A friendly reply in the same language as the user.",
-                    },
-                    changes: {
-                      type: "array",
-                      description: "List of changes. Can be empty if only chatting.",
-                      items: {
-                        type: "object",
-                        properties: {
-                          action: {
-                            type: "string",
-                            enum: ["add", "update", "remove", "clear"],
-                            description: "'clear' removes ALL components. 'add' adds a new one. 'update' modifies by id. 'remove' deletes by id.",
-                          },
-                          type: {
-                            type: "string",
-                            enum: ["Navbar", "Hero", "Features", "Pricing", "Testimonials", "FAQ", "CTA", "Footer", "Gallery", "Team", "Contact"],
-                          },
-                          id: { type: "string", description: "Required for update/remove." },
-                          index: { type: "number", description: "Optional insertion index for add." },
-                          props: {
-                            type: "object",
-                            description: "Component props. DO NOT LEAVE EMPTY {}.",
-                            properties: {
-                              logoText: { type: "string", description: "Brand name for Navbar (e.g. BrewMaster)" },
-                              title: { type: "string", description: "Main headline/title" },
-                              subtitle: { type: "string", description: "Subtitle description" },
-                              badgeText: { type: "string", description: "Badge tag pill for Hero (e.g. ✨ PROMO SPECIAL)" },
-                              accentColor: { type: "string", description: "Hex accent color for buttons & badges (e.g. #3b82f6)" },
-                              bgColor: { type: "string", description: "Hex background color code e.g. #2c1810" },
-                              textColor: { type: "string", description: "Hex text color code e.g. #f5e6d3" },
-                              companyName: { type: "string", description: "Company name for Footer" },
-                              text: { type: "string", description: "Footer copyright/description" },
-                              ctaText: { type: "string", description: "CTA button label" },
-                              buttonText: { type: "string", description: "Button label" },
-                              buttonUrl: { type: "string", description: "Button link URL" },
-                              layout: { type: "string", enum: ["left", "center", "right"] },
-                              variant: { type: "string", description: "Layout variant for the component. Hero: centered|split|minimal|bold. Features: grid|alternating|list. Pricing: cards|compact. Testimonials: grid|masonry|marquee. CTA: contained|banner|minimal." },
-                              primaryCta: {
-                                type: "object",
-                                properties: { label: { type: "string" }, url: { type: "string" } },
-                              },
-                              secondaryCta: {
-                                type: "object",
-                                properties: { label: { type: "string" }, url: { type: "string" } },
-                              },
-                              links: {
-                                type: "array",
-                                items: {
+    let lastError: any;
+
+    for (const targetModel of modelsToTry) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          console.log(`[API CHAT] Calling Google Gemini API (${targetModel}) for prompt: "${message}"`);
+          completion = await openai.chat.completions.create({
+            model: targetModel,
+            messages: messagesForAi as any,
+            max_tokens: 4096,
+            tools: [
+              {
+                type: "function",
+                function: {
+                  name: "apply_page_changes",
+                  description: "Apply changes to the landing page. MUST populate all props with real content.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      replyToUser: {
+                        type: "string",
+                        description: "A friendly reply in the same language as the user.",
+                      },
+                      changes: {
+                        type: "array",
+                        description: "List of changes. Can be empty if only chatting.",
+                        items: {
+                          type: "object",
+                          properties: {
+                            action: {
+                              type: "string",
+                              enum: ["add", "update", "remove", "clear"],
+                              description: "'clear' removes ALL components. 'add' adds a new one. 'update' modifies by id. 'remove' deletes by id.",
+                            },
+                            type: {
+                              type: "string",
+                              enum: ["Navbar", "Hero", "Features", "Pricing", "Testimonials", "FAQ", "CTA", "Footer", "Gallery", "Team", "Contact"],
+                            },
+                            id: { type: "string", description: "Required for update/remove." },
+                            index: { type: "number", description: "Optional insertion index for add." },
+                            props: {
+                              type: "object",
+                              description: "Component props. DO NOT LEAVE EMPTY {}.",
+                              properties: {
+                                logoText: { type: "string", description: "Brand name for Navbar (e.g. BrewMaster)" },
+                                title: { type: "string", description: "Main headline/title" },
+                                subtitle: { type: "string", description: "Subtitle description" },
+                                badgeText: { type: "string", description: "Badge tag pill for Hero (e.g. ✨ PROMO SPECIAL)" },
+                                accentColor: { type: "string", description: "Hex accent color for buttons & badges (e.g. #3b82f6)" },
+                                bgColor: { type: "string", description: "Hex background color code e.g. #2c1810" },
+                                textColor: { type: "string", description: "Hex text color code e.g. #f5e6d3" },
+                                companyName: { type: "string", description: "Company name for Footer" },
+                                text: { type: "string", description: "Footer copyright/description" },
+                                ctaText: { type: "string", description: "CTA button label" },
+                                buttonText: { type: "string", description: "Button label" },
+                                buttonUrl: { type: "string", description: "Button link URL" },
+                                layout: { type: "string", enum: ["left", "center", "right"] },
+                                variant: { type: "string", description: "Layout variant for the component. Hero: centered|split|minimal|bold. Features: grid|alternating|list. Pricing: cards|compact. Testimonials: grid|masonry|marquee. CTA: contained|banner|minimal." },
+                                primaryCta: {
                                   type: "object",
                                   properties: { label: { type: "string" }, url: { type: "string" } },
                                 },
-                              },
-                              items: {
-                                type: "array",
-                                items: {
+                                secondaryCta: {
                                   type: "object",
-                                  properties: {
-                                    icon: { type: "string" },
-                                    title: { type: "string" },
-                                    description: { type: "string" },
-                                    quote: { type: "string" },
-                                    author: { type: "string" },
-                                    role: { type: "string" },
-                                    question: { type: "string" },
-                                    answer: { type: "string" },
+                                  properties: { label: { type: "string" }, url: { type: "string" } },
+                                },
+                                links: {
+                                  type: "array",
+                                  items: {
+                                    type: "object",
+                                    properties: { label: { type: "string" }, url: { type: "string" } },
+                                  },
+                                },
+                                items: {
+                                  type: "array",
+                                  items: {
+                                    type: "object",
+                                    properties: {
+                                      icon: { type: "string" },
+                                      title: { type: "string" },
+                                      description: { type: "string" },
+                                      quote: { type: "string" },
+                                      author: { type: "string" },
+                                      role: { type: "string" },
+                                      question: { type: "string" },
+                                      answer: { type: "string" },
+                                    },
+                                  },
+                                },
+                                plans: {
+                                  type: "array",
+                                  items: {
+                                    type: "object",
+                                    properties: {
+                                      name: { type: "string" },
+                                      price: { type: "string" },
+                                      description: { type: "string" },
+                                      features: { type: "array", items: { type: "string" } },
+                                      isPopular: { type: "boolean" },
+                                      ctaText: { type: "string" },
+                                    },
                                   },
                                 },
                               },
-                              plans: {
-                                type: "array",
-                                items: {
-                                  type: "object",
-                                  properties: {
-                                    name: { type: "string" },
-                                    price: { type: "string" },
-                                    description: { type: "string" },
-                                    features: { type: "array", items: { type: "string" } },
-                                    isPopular: { type: "boolean" },
-                                    ctaText: { type: "string" },
-                                  },
-                                },
-                              },
+                              additionalProperties: true,
                             },
-                            additionalProperties: true,
                           },
+                          required: ["action"],
                         },
-                        required: ["action"],
                       },
                     },
+                    required: ["replyToUser", "changes"],
                   },
-                  required: ["replyToUser", "changes"],
                 },
               },
-            },
-          ],
-          tool_choice: { type: "function", function: { name: "apply_page_changes" } },
-        });
-        break;
-      } catch (err: any) {
-        const is429 = err?.status === 429 || String(err?.message || "").includes("429");
-        if (is429 && attempt < 2) {
-          console.warn(`[API CHAT] Rate limit 429 encountered, retrying in 2s (attempt ${attempt}/2)...`);
-          await new Promise((res) => setTimeout(res, 2000));
-        } else {
-          throw err;
+            ],
+            tool_choice: { type: "function", function: { name: "apply_page_changes" } },
+          });
+          lastError = null;
+          break;
+        } catch (err: any) {
+          lastError = err;
+          const is429 = err?.status === 429 || String(err?.message || "").includes("429");
+          if (is429 && attempt < 2) {
+            console.warn(`[API CHAT] Rate limit 429 on ${targetModel}, retrying in 2s...`);
+            await new Promise((res) => setTimeout(res, 2000));
+          } else {
+            console.warn(`[API CHAT] Model ${targetModel} failed (${err?.message || err}). Trying fallback model...`);
+            break;
+          }
         }
       }
+      if (completion) break;
+    }
+
+    if (!completion && lastError) {
+      throw lastError;
     }
 
     if (!completion.choices || completion.choices.length === 0) {
@@ -295,7 +308,7 @@ ${JSON.stringify(currentPageData, null, 2)}`;
     let hasChanges = false;
 
     if (!aiMessage.tool_calls || aiMessage.tool_calls.length === 0) {
-      throw new Error(`Model '${modelName}' tidak mendukung Tool Calling (Function Calling) di OpenRouter.`);
+      throw new Error(`Model Google Gemini tidak mendukung Tool Calling di API ini.`);
     }
 
     for (const toolCall of aiMessage.tool_calls) {
