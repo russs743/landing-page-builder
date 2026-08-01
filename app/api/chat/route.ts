@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       apiKey: process.env.GEMINI_API_KEY,
     });
 
-    const modelName = "gemini-3.5-flash";
+    const modelName = "gemini-flash-latest";
 
     console.log(
       `[API CHAT] Calling Google Gemini API (${modelName}) for prompt: "${message}"`,
