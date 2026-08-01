@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import OpenAI from "openai";
+import { normalizeProps } from "@/lib/utils/normalizeProps";
 
 export async function POST(req: NextRequest) {
   try {
@@ -247,89 +248,10 @@ ${JSON.stringify(currentPageData, null, 2)}`;
           const args = JSON.parse(toolCall.function.arguments);
           if (args.replyToUser) replyText = args.replyToUser;
 
-          const normalizeProps = (p: any, componentType?: string): any => {
-            if (!p || typeof p !== "object") p = {};
-            const out: any = { ...p };
-
-            // Extract brand name & hex colors from user prompt if missing
-            const brandMatch = message.match(/(?:brand|bernama|perusahaan|startup|untuk)\s+([A-Za-z0-9_\-\s]{2,20})/i);
-            const extractedBrand = brandMatch ? brandMatch[1].trim() : undefined;
-
-            const hexMatches = message.match(/#[0-9a-fA-F]{6}\b/g);
-            const promptBgColor = hexMatches && hexMatches[0] ? hexMatches[0] : undefined;
-            const promptTextColor = hexMatches && hexMatches[1] ? hexMatches[1] : undefined;
-
-            // Fix alias mistakes
-            if (out.brandName && !out.logoText) { out.logoText = out.brandName; delete out.brandName; }
-            if (out.brand && !out.logoText) { out.logoText = out.brand; delete out.brand; }
-            if (out.companyName && !out.logoText && componentType === "Navbar") { out.logoText = out.companyName; }
-            if (out.name && !out.logoText && componentType === "Navbar") { out.logoText = out.name; }
-            if (out.imageSrc && !out.imageUrl) { out.imageUrl = out.imageSrc; delete out.imageSrc; }
-            if (componentType === "Hero" && out.imageUrl) { delete out.imageUrl; }
-
-            // Color enforcement from prompt
-            if (promptBgColor && !out.bgColor) out.bgColor = promptBgColor;
-            if (promptTextColor && !out.textColor) out.textColor = promptTextColor;
-
-            // Auto-fill fallback props if AI generated empty props {}
-            if (componentType === "Navbar") {
-              if (!out.logoText) out.logoText = extractedBrand || "BrandName";
-              if (!out.links || !Array.isArray(out.links) || out.links.length === 0) {
-                out.links = [{ label: "Beranda", url: "#" }, { label: "Fitur", url: "#features" }, { label: "Kontak", url: "#contact" }];
-              }
-            }
-
-            if (componentType === "Hero") {
-              if (!out.title) out.title = `Solusi Terbaik ${extractedBrand ? "untuk " + extractedBrand : "Bisnis Anda"}`;
-              if (!out.subtitle) out.subtitle = "Tingkatkan produktivitas dan pertumbuhan bisnis Anda dengan layanan modern dan terpercaya.";
-              if (!out.primaryCta) out.primaryCta = { label: "Mulai Sekarang", url: "#" };
-            }
-
-            if (componentType === "Features") {
-              if (!out.title) out.title = "Fitur Unggulan Kami";
-              if (!out.items || !Array.isArray(out.items) || out.items.length === 0) {
-                out.items = [
-                  { icon: "Zap", title: "Performa Cepat", description: "Proses cepat dan efisien untuk hasil maksimal." },
-                  { icon: "Shield", title: "Keamanan Terjamin", description: "Perlindungan data tingkat tinggi untuk bisnis Anda." },
-                  { icon: "Star", title: "Kualitas Terbaik", description: "Pengalaman pengguna terbaik dengan standar profesional." }
-                ];
-              }
-            }
-
-            if (componentType === "Footer") {
-              if (!out.companyName) out.companyName = extractedBrand || "Company";
-              if (!out.text) out.text = `© ${new Date().getFullYear()} ${out.companyName}. Hak cipta dilindungi.`;
-            }
-
-            // Parse stringified JSON strings
-            for (const key of Object.keys(out)) {
-              const val = out[key];
-              if (typeof val === "string" && (val.startsWith("[") || val.startsWith("{"))) {
-                try { out[key] = JSON.parse(val.replace(/'/g, '"')); } catch (e) {}
-              }
-            }
-
-            // Ensure array fields are arrays
-            const arrayFields = ["links", "items", "plans", "images", "members"];
-            for (const field of arrayFields) {
-              if (out[field] !== undefined && !Array.isArray(out[field])) {
-                out[field] = typeof out[field] === "object" ? Object.values(out[field]) : [];
-              }
-            }
-
-            if (Array.isArray(out.plans)) {
-              out.plans = out.plans.map((plan: any) => ({
-                ...plan,
-                features: Array.isArray(plan.features) ? plan.features :
-                  (typeof plan.features === "string" ? plan.features.split(",").map((f: string) => f.trim()) : []),
-              }));
-            }
-
-            return out;
-          };
+          // normalizeProps is imported from @/lib/utils/normalizeProps
 
           for (const change of (args.changes || [])) {
-            const parsedProps = normalizeProps(change.props, change.type);
+            const parsedProps = normalizeProps(change.props, change.type, message);
 
             if (change.action === "clear") {
               updatedComponents = [];
