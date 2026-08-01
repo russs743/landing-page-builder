@@ -507,32 +507,15 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
                 className="w-full min-h-25 max-h-48 bg-transparent text-sm sm:text-base text-zinc-900 dark:text-white placeholder-zinc-400 border-0 focus:outline-none resize-none"
               />
 
-              <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
-                <div className="flex items-center gap-2">
-                  <button className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg transition-colors cursor-pointer">
-                    <Plus className="w-4 h-4" />
-                  </button>
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-xs font-semibold text-zinc-700 dark:text-zinc-300 border border-zinc-200/50 dark:border-zinc-700/50">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Gemini 3.5 Flash</span>
-                    <ChevronDown className="w-3 h-3 text-zinc-400 ml-0.5" />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                    <span>Project</span>
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
-
-                  <button
-                    onClick={() => handleCreateProject()}
-                    disabled={!promptInput.trim() || isCreating}
-                    className="p-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer shadow-sm active:scale-95"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
-                </div>
+              <div className="flex items-center justify-end pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
+                <button
+                  onClick={() => handleCreateProject()}
+                  disabled={!promptInput.trim() || isCreating}
+                  className="p-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer shadow-sm active:scale-95 flex items-center gap-2 px-4"
+                >
+                  <Send className="w-4 h-4" />
+                  <span className="text-xs font-semibold">{isCreating ? "Creating..." : "Generate"}</span>
+                </button>
               </div>
             </div>
 

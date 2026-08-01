@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     const modelName = "gemini-3.5-flash";
 
-    console.log(`🚀 [API CHAT] Calling Google Gemini API (${modelName}) for prompt: "${message}"`);
+    console.log(`[API CHAT] Calling Google Gemini API (${modelName}) for prompt: "${message}"`);
 
     // 1. Fetch project data
     const project = await prisma.project.findUnique({
