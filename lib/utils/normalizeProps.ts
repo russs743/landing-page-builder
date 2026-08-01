@@ -59,6 +59,17 @@ export function normalizeProps(
   if (promptBgColor && !out.bgColor) out.bgColor = promptBgColor;
   if (promptTextColor && !out.textColor) out.textColor = promptTextColor;
 
+  // --- Extract layout intent from user message for Hero ---
+  if (componentType === "Hero") {
+    if (/(?:rata\s+kanan|right-aligned|align\s+right|ke\s+kanan)/i.test(message)) {
+      out.layout = "right";
+    } else if (/(?:rata\s+tengah|center-aligned|align\s+center|ke\s+tengah)/i.test(message)) {
+      out.layout = "center";
+    } else if (/(?:rata\s+kiri|left-aligned|align\s+left|ke\s+kiri)/i.test(message)) {
+      out.layout = "left";
+    }
+  }
+
   // --- Auto-fill fallback props per component type ---
   if (componentType === "Navbar") {
     if (!out.logoText) out.logoText = extractedBrand || "BrandName";

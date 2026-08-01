@@ -92,7 +92,24 @@ export function WorkspaceArea({ project }: { project: any }) {
       </div>
 
       {/* Right Content Area */}
-      <div className="flex-1 flex flex-col relative min-w-0">
+      <div className="flex-1 flex flex-col relative min-w-0 h-full overflow-hidden">
+        {/* Loading Overlay - Covers ONLY Preview Area (Chat remains active) */}
+        {isLoading && (
+          <div className="absolute inset-0 z-40 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-sm flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200/80 dark:border-zinc-800/80 animate-in fade-in zoom-in-95">
+              <div className="relative w-12 h-12 flex items-center justify-center mb-4">
+                <div className="absolute inset-0 border-3 border-zinc-200 dark:border-zinc-700 rounded-full"></div>
+                <div className="absolute inset-0 border-3 border-zinc-900 dark:border-white rounded-full border-t-transparent animate-spin"></div>
+              </div>
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
+                Memproses Tampilan...
+              </h3>
+              <p className="text-xs text-zinc-500 max-w-56 text-center leading-relaxed">
+                Menyusun tata letak komponen landing page.
+              </p>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="h-16 shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex items-center justify-between px-6 z-50 relative">
           {/* Left Controls: 1-Click Theme Preset Bar */}
@@ -184,24 +201,6 @@ export function WorkspaceArea({ project }: { project: any }) {
 
         {/* Canvas Area */}
         <div className="flex-1 overflow-auto bg-zinc-100 dark:bg-zinc-950 relative flex flex-col items-center p-0">
-          {/* AI Loading Overlay */}
-          {isLoading && (
-            <div className="absolute inset-0 z-50 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm flex flex-col items-center justify-center">
-              <div className="flex flex-col items-center p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200/50 dark:border-zinc-800/50">
-                <div className="relative w-16 h-16 flex items-center justify-center mb-6">
-                  <div className="absolute inset-0 border-4 border-zinc-100 dark:border-zinc-800 rounded-full"></div>
-                  <div className="absolute inset-0 border-4 border-zinc-900 dark:border-white rounded-full border-t-transparent animate-spin"></div>
-                  <span className="text-xl">✨</span>
-                </div>
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">
-                  Memproses Perubahan...
-                </h3>
-                <p className="text-sm text-zinc-500 max-w-62.5 text-center">
-                  Mengatur komponen dan gaya visual landing page.
-                </p>
-              </div>
-            </div>
-          )}
 
           <div
             className={`w-full transition-all duration-300 flex flex-col ${

@@ -56,6 +56,25 @@ describe("normalizeProps", () => {
     });
   });
 
+  // ── Layout intent extraction ──────────────────────────────────────────────
+
+  describe("layout intent extraction from message", () => {
+    it("extracts layout='right' from 'layoutnya dibikin rata kanan coba'", () => {
+      const result = normalizeProps({}, "Hero", "layoutnya dibikin rata kanan coba");
+      expect(result.layout).toBe("right");
+    });
+
+    it("extracts layout='center' from 'bikin rata tengah'", () => {
+      const result = normalizeProps({}, "Hero", "bikin rata tengah");
+      expect(result.layout).toBe("center");
+    });
+
+    it("extracts layout='left' from 'layout rata kiri aja'", () => {
+      const result = normalizeProps({}, "Hero", "layout rata kiri aja");
+      expect(result.layout).toBe("left");
+    });
+  });
+
   // ── Auto-fill fallbacks ───────────────────────────────────────────────────
 
   describe("Navbar auto-fill", () => {
