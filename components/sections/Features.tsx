@@ -67,7 +67,7 @@ const FeaturesAlternating: React.FC<FeaturesProps> = ({ title, subtitle, items =
                   />
                 </div>
               </div>
-              <div className="flex-[2] text-center sm:text-left">
+              <div className="flex-2 text-center sm:text-left">
                 <h3 className={cn("text-xl sm:text-2xl font-bold mb-3", !textColor && "text-zinc-900 dark:text-white")} style={{ color: textColor }}>{feature.title}</h3>
                 <p className={cn("text-sm sm:text-base leading-relaxed", !textColor && "text-zinc-600 dark:text-zinc-400")} style={{ color: textColor, opacity: textColor ? 0.8 : undefined }}>{feature.description}</p>
               </div>

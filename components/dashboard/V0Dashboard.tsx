@@ -836,7 +836,7 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
                   <Layers className="w-4 h-4 text-purple-500" />
                   <span>3. Komponen Terdaftar & Layout Variants</span>
                 </div>
-                <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                <div className="space-y-2.5 max-h-95 overflow-y-auto pr-1">
                   {[
                     { type: "Hero", variants: ["centered", "split", "minimal", "bold"], desc: "Glow background, 2-col stats, editorial typography, dark full-bleed" },
                     { type: "Features", variants: ["grid", "alternating", "list"], desc: "3-column cards, zig-zag row, numbered process steps" },
@@ -868,7 +868,7 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
             {/* SECTION 3: PROMPT CHEATSHEET & UI TOKENS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* PROMPT CHEATSHEET */}
-              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl border border-blue-200 dark:border-blue-900/50 space-y-4">
+              <div className="p-6 bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl border border-blue-200 dark:border-blue-900/50 space-y-4">
                 <div className="flex items-center gap-2 font-bold text-sm text-blue-900 dark:text-blue-300">
                   <Wand2 className="w-4 h-4 text-blue-500" />
                   <span>4. Panduan Prompt AI (AI Prompt Cheatsheet)</span>

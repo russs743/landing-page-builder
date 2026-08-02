@@ -162,7 +162,7 @@ const HeroMinimal: React.FC<HeroProps> = ({ title, subtitle, primaryCta, seconda
           style={{ color: accentColor || textColor || undefined, opacity: 0.7 }}
         >— Landing Page</motion.div>
         <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-          className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter leading-[0.95] break-words"
+          className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter leading-[0.95] wrap-break-word"
           style={{ color: textColor }}
         >{title}</motion.h1>
         {subtitle && (
