@@ -31,7 +31,11 @@ import {
   ExternalLink,
   Layers,
   Sparkle,
-  LogIn
+  LogIn,
+  Copy,
+  Check,
+  Type,
+  Wand2
 } from "lucide-react";
 
 export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] }) {
@@ -54,6 +58,13 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
   // Custom Modals State
   const [renameModalProject, setRenameModalProject] = useState<{ id: string; name: string } | null>(null);
   const [deleteModalProject, setDeleteModalProject] = useState<{ id: string; name: string } | null>(null);
+  const [copiedHex, setCopiedHex] = useState<string | null>(null);
+
+  const handleCopyHex = (hex: string) => {
+    navigator.clipboard.writeText(hex);
+    setCopiedHex(hex);
+    setTimeout(() => setCopiedHex(null), 2000);
+  };
   const [renameInputValue, setRenameInputValue] = useState("");
   const [isSubmittingModal, setIsSubmittingModal] = useState(false);
 
@@ -705,39 +716,174 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
 
         {/* ================= TAB 4: DESIGN SYSTEMS ================= */}
         {activeTab === "design" && (
-          <div className="p-8 max-w-5xl mx-auto space-y-8">
+          <div className="p-8 max-w-6xl mx-auto space-y-10">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                <Sparkles className="w-4 h-4" /> Design System & Token Standard
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white mt-1">
                 Design Systems
               </h1>
-              <p className="mt-2 text-sm text-zinc-500">Color palettes, typography standards, and component libraries.</p>
+              <p className="mt-2 text-sm text-zinc-500 max-w-2xl">
+                Dokumentasi lengkap standar warna, hierarki tipografi, variasi komponen, serta panduan prompt AI untuk pembuatan landing page otomatis.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* SECTION 1: COLOR PALETTES */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 font-bold text-base text-zinc-900 dark:text-white">
+                <Palette className="w-5 h-5 text-blue-500" />
+                <span>1. Preset Palet Warna (Color Palettes)</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { name: "Obsidian Dark", bg: "#121212", text: "#ffffff", accent: "#3b82f6", desc: "Dark mode modern dengan kontras tinggi & aksen biru neon" },
+                  { name: "Warm Coffee", bg: "#2c1810", text: "#f5e6d3", accent: "#d97706", desc: "Nuansa cokelat hangat cocok untuk cafe, warkop & artisan bakery" },
+                  { name: "Deep Navy", bg: "#090d16", text: "#f8fafc", accent: "#3b82f6", desc: "Tema profesional corporate, fintech & platform SaaS" },
+                  { name: "Emerald Eco", bg: "#052e16", text: "#ecfdf5", accent: "#10b981", desc: "Tema segar untuk produk organik, kesehatan & sustainability" },
+                  { name: "Cream Rose", bg: "#fdf6f0", text: "#881337", accent: "#be123c", desc: "Nuansa estetik & elegan untuk skincare, fashion & lifestyle" },
+                  { name: "Clean Light", bg: "#ffffff", text: "#111827", accent: "#2563eb", desc: "Minimalis bersih serbaguna dengan kontras abu-abu seimbang" },
+                ].map((color, idx) => (
+                  <div 
+                    key={idx} 
+                    className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-sm hover:shadow-md transition-all relative overflow-hidden"
+                    style={{ backgroundColor: color.bg, color: color.text }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm">{color.name}</span>
+                      <button
+                        onClick={() => handleCopyHex(color.bg)}
+                        className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md text-[10px] font-mono hover:bg-white/20 transition-all flex items-center gap-1 cursor-pointer"
+                      >
+                        {copiedHex === color.bg ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {color.bg}
+                      </button>
+                    </div>
+                    <p className="text-xs opacity-80 leading-relaxed">{color.desc}</p>
+                    <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                      <span className="text-[10px] opacity-70">Sample Accent:</span>
+                      <span className="w-4 h-4 rounded-full shadow-inner inline-block" style={{ backgroundColor: color.accent }} />
+                      <span className="text-[10px] font-mono opacity-80">{color.accent}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* SECTION 2: TYPOGRAPHY & COMPONENT VARIANTS */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* TYPOGRAPHY HIERARCHY */}
               <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-                <div className="flex items-center gap-2 font-semibold text-sm">
-                  <Palette className="w-4 h-4 text-blue-500" />
-                  <span>Preset Palet Warna</span>
+                <div className="flex items-center gap-2 font-bold text-sm text-zinc-900 dark:text-white">
+                  <Type className="w-4 h-4 text-indigo-500" />
+                  <span>2. Standar Tipografi (Typography Hierarchy)</span>
                 </div>
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900 text-white"><span>Obsidian Dark</span><span>#121212</span></div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#2c1810] text-[#f5e6d3]"><span>Warm Coffee</span><span>#2c1810</span></div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#090d16] text-[#f8fafc]"><span>Deep Navy</span><span>#090d16</span></div>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#052e16] text-[#ecfdf5]"><span>Emerald Eco</span><span>#052e16</span></div>
+                <div className="space-y-4 pt-2">
+                  <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase">Heading 1 (Hero Title)</span>
+                    <p className="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-white">Inter ExtraBold (3xl - 5xl)</p>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase">Heading 2 (Section Title)</span>
+                    <p className="text-base font-bold tracking-tight text-zinc-900 dark:text-white">Inter Bold (2xl - 3xl)</p>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase">Body Paragraph</span>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">Inter Regular (sm / base) — Menjamin keterbacaan tinggi di semua perangkat.</p>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase">Badge & Code</span>
+                    <span className="inline-block px-2.5 py-0.5 bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-md text-[11px] font-mono">
+                      ✨ PROMO SPECIAL (Mono / Tracking Wide)
+                    </span>
+                  </div>
                 </div>
               </div>
 
+              {/* COMPONENT CATALOG & VARIANTS */}
               <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-                <div className="flex items-center gap-2 font-semibold text-sm">
-                  <Layers className="w-4 h-4 text-indigo-500" />
-                  <span>Komponen Terdaftar</span>
+                <div className="flex items-center gap-2 font-bold text-sm text-zinc-900 dark:text-white">
+                  <Layers className="w-4 h-4 text-purple-500" />
+                  <span>3. Komponen Terdaftar & Layout Variants</span>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {["Navbar", "Hero", "Features", "Pricing", "Testimonials", "FAQ", "CTA", "Footer"].map((c) => (
-                    <span key={c} className="px-3 py-1.5 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-semibold border border-zinc-200 dark:border-zinc-700">
-                      {c}
-                    </span>
+                <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                  {[
+                    { type: "Hero", variants: ["centered", "split", "minimal", "bold"], desc: "Glow background, 2-col stats, editorial typography, dark full-bleed" },
+                    { type: "Features", variants: ["grid", "alternating", "list"], desc: "3-column cards, zig-zag row, numbered process steps" },
+                    { type: "Pricing", variants: ["cards", "compact"], desc: "Vertical plan cards, horizontal feature comparison table" },
+                    { type: "Testimonials", variants: ["grid", "masonry", "marquee"], desc: "Balanced cards, featured quote layout, infinite auto-scroll" },
+                    { type: "CTA", variants: ["contained", "banner", "minimal"], desc: "High contrast box, full-width inline banner, typographic" },
+                    { type: "FAQ", variants: ["accordion"], desc: "Interactive toggle question & answer list" },
+                    { type: "Navbar", variants: ["standard"], desc: "Brand logo, navigation links, primary CTA button" },
+                    { type: "Footer", variants: ["standard"], desc: "Brand copyright, social links, menu footer" },
+                  ].map((comp, idx) => (
+                    <div key={idx} className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-zinc-900 dark:text-white">{comp.type}</span>
+                        <div className="flex flex-wrap gap-1">
+                          {comp.variants.map((v) => (
+                            <span key={v} className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono rounded-md">
+                              {v}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-zinc-500">{comp.desc}</p>
+                    </div>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 3: PROMPT CHEATSHEET & UI TOKENS */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* PROMPT CHEATSHEET */}
+              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl border border-blue-200 dark:border-blue-900/50 space-y-4">
+                <div className="flex items-center gap-2 font-bold text-sm text-blue-900 dark:text-blue-300">
+                  <Wand2 className="w-4 h-4 text-blue-500" />
+                  <span>4. Panduan Prompt AI (AI Prompt Cheatsheet)</span>
+                </div>
+                <p className="text-xs text-blue-800/80 dark:text-blue-300/80">
+                  AI dapat membaca instruksi spesifik untuk mengganti warna, layout, variasi komponen, hingga rata teks. Contoh prompt:
+                </p>
+                <div className="space-y-2">
+                  {[
+                    "Bikin landing page warkop modern tema Warm Coffee dengan Hero split",
+                    "Ubah layout Hero jadi centered dan ganti warna tombol jadi #3b82f6",
+                    "Ubah testimoni ke model marquee yang jalan sendiri secara otomatis",
+                    "Ubah kata-katanya jadi warkopolim jangan cafein dan rata kanan",
+                  ].map((promptText, pIdx) => (
+                    <div 
+                      key={pIdx}
+                      onClick={() => handleCreateProject(promptText)}
+                      className="p-3 bg-white/80 dark:bg-zinc-900/80 rounded-xl border border-blue-100 dark:border-blue-900/40 text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:border-blue-500 cursor-pointer transition-all flex items-center justify-between group"
+                    >
+                      <span>"{promptText}"</span>
+                      <ChevronRight className="w-4 h-4 text-blue-500 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* UI TOKENS SPECIFICATION */}
+              <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+                <div className="flex items-center gap-2 font-bold text-sm text-zinc-900 dark:text-white">
+                  <Sparkle className="w-4 h-4 text-amber-500" />
+                  <span>5. UI Tokens & Micro-Interactions</span>
+                </div>
+                <div className="space-y-3 text-xs text-zinc-600 dark:text-zinc-400">
+                  <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                    <span className="font-bold text-zinc-900 dark:text-white">Border Radius Standard</span>
+                    <p className="text-[11px]">Pill buttons (<code className="font-mono text-blue-500">rounded-full</code>), Section Cards (<code className="font-mono text-blue-500">rounded-2xl</code>), Inputs (<code className="font-mono text-blue-500">rounded-xl</code>).</p>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                    <span className="font-bold text-zinc-900 dark:text-white">Glassmorphism Effect</span>
+                    <p className="text-[11px]">Navbar & Floating Bar menggunakan <code className="font-mono text-blue-500">backdrop-blur-md bg-white/70 dark:bg-zinc-900/70 border-white/20</code>.</p>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                    <span className="font-bold text-zinc-900 dark:text-white">Micro-Animations</span>
+                    <p className="text-[11px]">Framer Motion scale on hover (<code className="font-mono text-blue-500">hover:scale-105</code>), active press (<code className="font-mono text-blue-500">active:scale-95</code>), & infinite marquee scroll.</p>
+                  </div>
                 </div>
               </div>
             </div>
