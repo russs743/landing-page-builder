@@ -7,6 +7,7 @@ import { ProjectCardPreview } from "./ProjectCardPreview";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   Search, 
   Home, 
@@ -38,10 +39,26 @@ import {
   Wand2
 } from "lucide-react";
 
-export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] }) {
+export function V0Dashboard({ 
+  initialProjects = [],
+  initialTab = "home"
+}: { 
+  initialProjects?: any[];
+  initialTab?: "home" | "projects" | "chats" | "design" | "templates";
+}) {
   const { isSignedIn } = useUser();
   const { openSignIn } = useClerk();
-  const [activeTab, setActiveTab] = useState<"home" | "projects" | "chats" | "design" | "templates">("home");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const activeTab = React.useMemo<"home" | "projects" | "chats" | "design" | "templates">(() => {
+    if (pathname === "/projects") return "projects";
+    if (pathname === "/chats") return "chats";
+    if (pathname === "/design") return "design";
+    if (pathname === "/templates") return "templates";
+    if (pathname === "/home") return "home";
+    return initialTab;
+  }, [pathname, initialTab]);
   const [projects, setProjects] = useState<any[]>(initialProjects);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [promptInput, setPromptInput] = useState("");
@@ -391,29 +408,29 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
 
           {/* Main Navigation Links */}
           <nav className="space-y-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            <button 
-              onClick={() => setActiveTab("home")}
+            <Link 
+              href="/home"
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer text-left ${activeTab === "home" ? "bg-zinc-200/70 dark:bg-zinc-800/80 font-semibold text-zinc-900 dark:text-white" : "hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"}`}
             >
               <Home className="w-4 h-4 text-zinc-500 shrink-0" />
               {!isSidebarCollapsed && <span>Home</span>}
-            </button>
+            </Link>
 
-            <button 
-              onClick={() => setActiveTab("projects")}
+            <Link 
+              href="/projects"
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer text-left ${activeTab === "projects" ? "bg-zinc-200/70 dark:bg-zinc-800/80 font-semibold text-zinc-900 dark:text-white" : "hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"}`}
             >
               <FolderKanban className="w-4 h-4 text-zinc-500 shrink-0" />
               {!isSidebarCollapsed && <span>Projects</span>}
-            </button>
+            </Link>
 
-            <button 
-              onClick={() => setActiveTab("design")}
+            <Link 
+              href="/design"
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer text-left ${activeTab === "design" ? "bg-zinc-200/70 dark:bg-zinc-800/80 font-semibold text-zinc-900 dark:text-white" : "hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"}`}
             >
               <Palette className="w-4 h-4 text-zinc-500 shrink-0" />
               {!isSidebarCollapsed && <span>Design Systems</span>}
-            </button>
+            </Link>
           </nav>
 
           {!isSidebarCollapsed && (

@@ -197,7 +197,7 @@ export function Testimonials({ title, subtitle, items = [], bgColor, textColor, 
         <div className="relative flex overflow-hidden mb-6">
           <div className="flex gap-6 animate-marquee-left whitespace-nowrap">
             {doubled.map((t, i) => (
-              <div key={i} className="inline-flex flex-col min-w-[300px] sm:min-w-[350px] p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shrink-0">
+              <div key={i} className="inline-flex flex-col min-w-75 sm:min-w-87.5 p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shrink-0">
                 <p className="text-xs sm:text-sm italic leading-relaxed whitespace-normal">"{t.quote}"</p>
                 <div className="mt-4 flex items-center gap-3 pt-3 border-t border-white/10">
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
@@ -215,7 +215,7 @@ export function Testimonials({ title, subtitle, items = [], bgColor, textColor, 
         <div className="relative flex overflow-hidden">
           <div className="flex gap-6 animate-marquee-right whitespace-nowrap">
             {[...doubled].reverse().map((t, i) => (
-              <div key={i} className="inline-flex flex-col min-w-[300px] sm:min-w-[350px] p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shrink-0">
+              <div key={i} className="inline-flex flex-col min-w-75 sm:min-w-87.5 p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shrink-0">
                 <p className="text-xs sm:text-sm italic leading-relaxed whitespace-normal">"{t.quote}"</p>
                 <div className="mt-4 flex items-center gap-3 pt-3 border-t border-white/10">
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
