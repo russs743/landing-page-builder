@@ -432,7 +432,9 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
                 {isFavoritesOpen && (
                   <div className="space-y-0.5 pl-2 max-h-32 overflow-y-auto no-scrollbar">
                     {favoriteProjects.length === 0 ? (
-                      <div className="text-[11px] text-zinc-400 px-3 py-1 italic">Klik ⭐ di project untuk menyimpan favorit</div>
+                      <div className="text-[11px] text-zinc-400 px-3 py-1 italic flex items-center gap-1">
+                        Klik <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" /> di project untuk menyimpan favorit
+                      </div>
                     ) : (
                       favoriteProjects.map((p) => (
                         <Link
@@ -440,7 +442,7 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
                           href={`/projects/${p.id}`}
                           className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/40 dark:hover:bg-zinc-800/40 rounded-lg truncate transition-colors"
                         >
-                          <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
+                          <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
                           <span className="truncate">{p.name || "Untitled Project"}</span>
                         </Link>
                       ))
@@ -631,9 +633,10 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
                           e.stopPropagation();
                           toggleFavorite(project.id, e);
                         }}
-                        className="absolute top-3 right-3 p-2 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md rounded-full shadow-xs hover:scale-110 transition-transform cursor-pointer z-10"
+                        title={favorites.includes(project.id) ? "Hapus dari Favorit" : "Tambah ke Favorit"}
+                        className="absolute top-3 right-3 p-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md rounded-full border border-zinc-200/60 dark:border-zinc-800/60 shadow-xs hover:scale-110 active:scale-95 transition-all cursor-pointer z-10"
                       >
-                        <Star className={`w-4 h-4 ${favorites.includes(project.id) ? "text-amber-400 fill-amber-400" : "text-zinc-400"}`} />
+                        <Star className={`w-4 h-4 transition-colors ${favorites.includes(project.id) ? "text-amber-500 fill-amber-500" : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"}`} />
                       </button>
                     </div>
 
