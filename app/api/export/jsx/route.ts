@@ -37,24 +37,254 @@ ${sectionJsx}
 `;
 }
 
-// Generates a simple stub component file for each type
+// Generates full styled React + Tailwind CSS component implementation for each type
 function generateStubComponent(type: string): string {
-  return `import React from 'react';
+  switch (type) {
+    case "Navbar":
+      return `import React from 'react';
 
-// ${type} component — edit props and styles as needed
-export function ${type}(props) {
-  // All props are passed directly from the page data
-  // Refer to your AI Landing Page Builder project for the full implementation
-  console.warn('[${type}] This is a stub. Replace with your actual component implementation.');
+export function Navbar({ logoText = 'Company', links = [], ctaText = 'Get Started', bgColor, textColor, accentColor }) {
+  const isDark = bgColor && bgColor.toLowerCase() !== '#ffffff';
+  const buttonBg = accentColor || (isDark ? '#ffffff' : '#111827');
+  const buttonTextColor = accentColor ? '#ffffff' : (isDark ? '#111827' : '#ffffff');
+
   return (
-    <section data-component="${type}" style={{ padding: '4rem 2rem' }}>
-      <pre style={{ fontSize: '12px', opacity: 0.5 }}>
-        {JSON.stringify(props, null, 2)}
-      </pre>
+    <header className="w-full relative shadow-sm" style={{ backgroundColor: bgColor || '#111827', color: textColor || '#ffffff' }}>
+      <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 sm:p-6 lg:px-8">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-sm" style={{ backgroundColor: accentColor || '#3b82f6' }}>
+            {logoText.charAt(0)}
+          </div>
+          <span className="font-bold text-lg sm:text-xl tracking-tight">{logoText}</span>
+        </div>
+        <div className="flex items-center gap-x-6">
+          {(links || []).map((item, idx) => (
+            <a key={idx} href={item.url || '#'} className="text-xs sm:text-sm font-semibold hover:opacity-80 transition-opacity">
+              {item.label}
+            </a>
+          ))}
+        </div>
+        {ctaText && (
+          <a href="#" className="hidden sm:inline-block rounded-full px-5 py-2 text-xs sm:text-sm font-bold shadow-md transition-all hover:scale-105" style={{ backgroundColor: buttonBg, color: buttonTextColor }}>
+            {ctaText}
+          </a>
+        )}
+      </nav>
+    </header>
+  );
+}`;
+
+    case "Hero":
+      return `import React from 'react';
+
+export function Hero({ title, subtitle, badgeText, primaryCta, secondaryCta, bgColor, textColor, accentColor, variant = 'centered', layout = 'center' }) {
+  const isRight = layout === 'right';
+  const isLeft = layout === 'left';
+  const alignClass = isRight ? 'text-right items-end' : isLeft ? 'text-left items-start' : 'text-center items-center';
+
+  return (
+    <section className="relative overflow-hidden py-24 sm:py-32 px-6" style={{ backgroundColor: bgColor || '#0f172a', color: textColor || '#ffffff' }}>
+      <div className={\`mx-auto max-w-5xl flex flex-col \${alignClass} space-y-6 relative z-10\`}>
+        {badgeText && (
+          <span className="inline-block px-3.5 py-1 rounded-full text-xs font-mono font-bold tracking-wide uppercase shadow-sm" style={{ backgroundColor: accentColor || '#3b82f6', color: '#ffffff' }}>
+            {badgeText}
+          </span>
+        )}
+        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight max-w-3xl">
+          {title || 'Build Better Products Fast'}
+        </h1>
+        <p className="text-lg sm:text-xl opacity-80 max-w-2xl leading-relaxed">
+          {subtitle || 'Supercharge your workflow with our modern components and flexible layout design system.'}
+        </p>
+        <div className={\`flex flex-wrap gap-4 pt-4 \${isRight ? 'justify-end' : isLeft ? 'justify-start' : 'justify-center'}\`}>
+          {primaryCta && (
+            <a href={primaryCta.url || '#'} className="px-6 py-3.5 rounded-xl font-bold text-sm shadow-lg transition-all hover:scale-105" style={{ backgroundColor: accentColor || '#3b82f6', color: '#ffffff' }}>
+              {primaryCta.label || 'Get Started'}
+            </a>
+          )}
+          {secondaryCta && (
+            <a href={secondaryCta.url || '#'} className="px-6 py-3.5 rounded-xl font-bold text-sm border border-white/20 hover:bg-white/10 transition-all">
+              {secondaryCta.label || 'Learn More'}
+            </a>
+          )}
+        </div>
+      </div>
     </section>
   );
-}
-`;
+}`;
+
+    case "Features":
+      return `import React from 'react';
+
+export function Features({ title, subtitle, items = [], bgColor, textColor, accentColor }) {
+  return (
+    <section className="py-20 px-6" style={{ backgroundColor: bgColor || '#f8fafc', color: textColor || '#0f172a' }}>
+      <div className="mx-auto max-w-6xl space-y-12">
+        <div className="text-center space-y-3 max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{title || 'Our Features'}</h2>
+          {subtitle && <p className="text-base opacity-75">{subtitle}</p>}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {(items || []).map((item, idx) => (
+            <div key={idx} className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-lg" style={{ backgroundColor: accentColor || '#3b82f6' }}>
+                {item.icon || '✨'}
+              </div>
+              <h3 className="text-lg font-bold">{item.title}</h3>
+              <p className="text-sm opacity-80 leading-relaxed">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`;
+
+    case "Pricing":
+      return `import React from 'react';
+
+export function Pricing({ title, subtitle, plans = [], bgColor, textColor, accentColor }) {
+  return (
+    <section className="py-20 px-6" style={{ backgroundColor: bgColor || '#ffffff', color: textColor || '#0f172a' }}>
+      <div className="mx-auto max-w-6xl space-y-12">
+        <div className="text-center space-y-3 max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{title || 'Simple Pricing'}</h2>
+          {subtitle && <p className="text-base opacity-75">{subtitle}</p>}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {(plans || []).map((plan, idx) => (
+            <div key={idx} className={\`p-8 rounded-3xl border \${plan.isPopular ? 'border-2 shadow-xl scale-105' : 'border-zinc-200 shadow-sm'} space-y-6 flex flex-col justify-between\`} style={{ borderColor: plan.isPopular ? (accentColor || '#3b82f6') : undefined }}>
+              <div className="space-y-4">
+                {plan.isPopular && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold text-white uppercase tracking-wider inline-block" style={{ backgroundColor: accentColor || '#3b82f6' }}>
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="text-xl font-bold">{plan.name}</h3>
+                <div className="text-3xl font-extrabold">{plan.price}</div>
+                <p className="text-xs opacity-75">{plan.description}</p>
+                <ul className="space-y-2 text-xs pt-4 border-t border-zinc-200">
+                  {(plan.features || []).map((feat, fIdx) => (
+                    <li key={fIdx} className="flex items-center gap-2">✓ {feat}</li>
+                  ))}
+                </ul>
+              </div>
+              <button className="w-full py-3 rounded-xl font-bold text-xs text-white shadow-md transition-all hover:scale-105" style={{ backgroundColor: accentColor || '#3b82f6' }}>
+                {plan.ctaText || 'Choose Plan'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`;
+
+    case "Testimonials":
+      return `import React from 'react';
+
+export function Testimonials({ title, subtitle, items = [], bgColor, textColor, accentColor }) {
+  return (
+    <section className="py-20 px-6 overflow-hidden" style={{ backgroundColor: bgColor || '#0f172a', color: textColor || '#ffffff' }}>
+      <div className="mx-auto max-w-6xl space-y-12">
+        <div className="text-center space-y-3 max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{title || 'Trusted by Industry Leaders'}</h2>
+          {subtitle && <p className="text-base opacity-75">{subtitle}</p>}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {(items || []).map((item, idx) => (
+            <div key={idx} className="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-sm space-y-4">
+              <p className="text-sm italic leading-relaxed">"{item.quote}"</p>
+              <div className="pt-2 border-t border-white/10">
+                <div className="font-bold text-sm">{item.author}</div>
+                <div className="text-xs opacity-70">{item.role}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`;
+
+    case "FAQ":
+      return `import React from 'react';
+
+export function FAQ({ title, subtitle, items = [], bgColor, textColor }) {
+  return (
+    <section className="py-20 px-6" style={{ backgroundColor: bgColor || '#f8fafc', color: textColor || '#0f172a' }}>
+      <div className="mx-auto max-w-4xl space-y-12">
+        <div className="text-center space-y-3">
+          <h2 className="text-3xl font-extrabold">{title || 'Frequently Asked Questions'}</h2>
+          {subtitle && <p className="text-sm opacity-75">{subtitle}</p>}
+        </div>
+        <div className="space-y-4">
+          {(items || []).map((item, idx) => (
+            <details key={idx} className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm cursor-pointer group">
+              <summary className="font-bold text-sm flex justify-between items-center list-none">
+                {item.question}
+                <span className="text-blue-500 font-mono group-open:rotate-45 transition-transform">+</span>
+              </summary>
+              <p className="text-xs opacity-80 pt-3 leading-relaxed">{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`;
+
+    case "CTA":
+      return `import React from 'react';
+
+export function CTA({ title, subtitle, buttonText, buttonUrl, bgColor, textColor, accentColor }) {
+  return (
+    <section className="py-20 px-6 text-center" style={{ backgroundColor: bgColor || '#3b82f6', color: textColor || '#ffffff' }}>
+      <div className="mx-auto max-w-4xl space-y-6 p-10 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
+        <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">{title || 'Ready to Get Started?'}</h2>
+        {subtitle && <p className="text-base opacity-90 max-w-xl mx-auto">{subtitle}</p>}
+        {buttonText && (
+          <a href={buttonUrl || '#'} className="inline-block px-8 py-3.5 rounded-full font-bold text-sm shadow-lg transition-all hover:scale-105" style={{ backgroundColor: accentColor || '#ffffff', color: '#0f172a' }}>
+            {buttonText}
+          </a>
+        )}
+      </div>
+    </section>
+  );
+}`;
+
+    case "Footer":
+      return `import React from 'react';
+
+export function Footer({ companyName = 'Company', text, links = [], bgColor, textColor }) {
+  return (
+    <footer className="py-12 px-6 border-t border-white/10" style={{ backgroundColor: bgColor || '#0f172a', color: textColor || '#94a3b8' }}>
+      <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="space-y-1 text-center md:text-left">
+          <div className="font-bold text-white text-base">{companyName}</div>
+          <p className="text-xs opacity-75">{text || \`© \${new Date().getFullYear()} \${companyName}. All rights reserved.\`}</p>
+        </div>
+        <div className="flex gap-6 text-xs font-semibold">
+          {(links || []).map((l, idx) => (
+            <a key={idx} href={l.url || '#'} className="hover:text-white transition-colors">{l.label}</a>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}`;
+
+    default:
+      return `import React from 'react';
+
+export function ${type}(props) {
+  return (
+    <section className="py-12 px-6 text-center bg-zinc-900 text-white">
+      <h3 className="font-bold text-lg">${type}</h3>
+    </section>
+  );
+}`;
+  }
 }
 
 // Generates package.json for the exported project
