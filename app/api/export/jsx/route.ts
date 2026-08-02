@@ -345,9 +345,35 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 `;
 }
 
-// Generates src/index.css with Tailwind v4 import
+// Generates src/index.css with Tailwind v4 import & Marquee Keyframe Animations
 function generateIndexCss(): string {
   return `@import "tailwindcss";
+
+@keyframes marquee-left {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marquee-left 25s linear infinite;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marquee-right 25s linear infinite;
+}
+
+.animate-marquee-left:hover, .animate-marquee-right:hover {
+  animation-play-state: paused;
+}
 
 * {
   box-sizing: border-box;

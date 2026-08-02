@@ -90,11 +90,44 @@ function componentToHtml(type: string, props: any): string {
     }
 
     case "Testimonials": {
-      const items = (props.items || []).map((t: any) =>
+      const items = Array.isArray(props.items) ? props.items : [];
+      const variant = props.variant || "grid";
+
+      if (variant === "marquee") {
+        const doubled = [...items, ...items];
+        const row1 = doubled.map((t: any) =>
+          `<div class="inline-flex flex-col min-w-[320px] p-6 rounded-2xl ${!props.bgColor ? "bg-white dark:bg-zinc-950 ring-1 ring-zinc-200 dark:ring-zinc-800" : "bg-white/10 border border-white/15"} shrink-0">
+            <p class="text-sm italic leading-relaxed whitespace-normal" ${textStyle}>"${t.quote}"</p>
+            <div class="mt-4 flex items-center gap-3 pt-3 border-t border-white/10">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${!props.bgColor ? "bg-zinc-100 dark:bg-zinc-800" : "bg-white/20"}" ${textStyle}>${t.author ? t.author.charAt(0) : "U"}</div>
+              <div>
+                <span class="text-xs font-bold" ${textStyle}>${t.author}</span>
+                ${t.role ? `<span class="text-[11px] opacity-75 ml-1.5" ${mutedStyle}>· ${t.role}</span>` : ""}
+              </div>
+            </div>
+          </div>`
+        ).join("");
+
+        return `
+<section class="py-24 overflow-hidden ${!props.bgColor ? "bg-zinc-50 dark:bg-zinc-900" : ""}" ${bg}>
+  <div class="max-w-7xl mx-auto px-6 mb-12 text-center">
+    <h2 class="text-4xl font-bold ${!props.textColor ? "text-zinc-900 dark:text-white" : ""}" ${textStyle}>${props.title || ""}</h2>
+    ${props.subtitle ? `<p class="mt-4 text-lg ${!props.textColor ? "text-zinc-600 dark:text-zinc-400" : ""}" ${mutedStyle}>${props.subtitle}</p>` : ""}
+  </div>
+  <div class="relative flex overflow-hidden mb-6">
+    <div class="flex gap-6 animate-marquee-left whitespace-nowrap">${row1}</div>
+  </div>
+  <div class="relative flex overflow-hidden">
+    <div class="flex gap-6 animate-marquee-right whitespace-nowrap">${row1}</div>
+  </div>
+</section>`;
+      }
+
+      const gridItems = items.map((t: any) =>
         `<figure class="rounded-2xl p-8 ${!props.bgColor ? "bg-white dark:bg-zinc-950 ring-1 ring-zinc-200 dark:ring-zinc-800" : "bg-white/10 border border-white/15"}">
           <blockquote class="text-sm leading-relaxed italic ${!props.textColor ? "text-zinc-900 dark:text-white" : ""}" ${textStyle}>"${t.quote}"</blockquote>
           <figcaption class="mt-6 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold bg-zinc-100 dark:bg-zinc-800" ${textStyle}>${t.author.charAt(0)}</div>
+            <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold ${!props.bgColor ? "bg-zinc-100 dark:bg-zinc-800" : "bg-white/20"}" ${textStyle}>${t.author.charAt(0)}</div>
             <div>
               <div class="text-sm font-semibold ${!props.textColor ? "text-zinc-900 dark:text-white" : ""}" ${textStyle}>${t.author}</div>
               ${t.role ? `<div class="text-xs ${!props.textColor ? "text-zinc-500 dark:text-zinc-400" : ""}" ${mutedStyle}>${t.role}</div>` : ""}
@@ -108,7 +141,7 @@ function componentToHtml(type: string, props: any): string {
     <div class="text-center max-w-2xl mx-auto mb-16">
       <h2 class="text-4xl font-bold ${!props.textColor ? "text-zinc-900 dark:text-white" : ""}" ${textStyle}>${props.title || ""}</h2>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${items}</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${gridItems}</div>
   </div>
 </section>`;
     }
@@ -247,6 +280,27 @@ export async function GET(req: NextRequest) {
     * { box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; margin: 0; }
     details summary::-webkit-details-marker { display: none; }
+    @keyframes marquee-left {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes marquee-right {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0%); }
+    }
+    .animate-marquee-left {
+      display: flex;
+      width: max-content;
+      animation: marquee-left 25s linear infinite;
+    }
+    .animate-marquee-right {
+      display: flex;
+      width: max-content;
+      animation: marquee-right 25s linear infinite;
+    }
+    .animate-marquee-left:hover, .animate-marquee-right:hover {
+      animation-play-state: paused;
+    }
   </style>
   <script>tailwind.config = { darkMode: 'class' }</script>
 </head>
