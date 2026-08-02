@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, ArrowLeft, Loader2, Square } from "lucide-react";
+import { Send, Sparkles, ArrowLeft, Loader2, Square, Copy, Check, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -216,6 +216,29 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
     }
   }, [project, router, setIsLoading]);
 
+  const [copiedMsgIdx, setCopiedMsgIdx] = useState<number | null>(null);
+
+  const handleCopyMessage = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMsgIdx(idx);
+    setTimeout(() => setCopiedMsgIdx(null), 2000);
+  };
+
+  const formatRelativeTime = (dateStr?: string | Date) => {
+    if (!dateStr) return "Just now";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "Just now";
+
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleStopGeneration = () => {
@@ -356,13 +379,38 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
         )}
         
         {visibleMessages.map((msg, idx) => (
-          <div key={idx} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+          <div key={idx} className={`group flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} space-y-1`}>
             <div className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
               msg.role === "user"
                 ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
                 : "bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
             }`}>
               {msg.role === "user" ? msg.content : <FormattedText content={msg.content} />}
+            </div>
+
+            {/* Hover Action Bar (Copy button & Relative Timestamp) */}
+            <div className={`opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-2 px-1 text-[11px] text-zinc-400 dark:text-zinc-500 ${
+              msg.role === "user" ? "flex-row-reverse" : "flex-row"
+            }`}>
+              <button
+                type="button"
+                onClick={() => handleCopyMessage(msg.content, idx)}
+                title="Salin teks pesan"
+                className="p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors cursor-pointer flex items-center gap-1"
+              >
+                {copiedMsgIdx === idx ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-[10px] text-emerald-500 font-semibold">Tersalin!</span>
+                  </>
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+              </button>
+              <div className="flex items-center gap-1 select-none font-mono text-[10px]">
+                <Clock className="w-3 h-3 opacity-70" />
+                <span>{formatRelativeTime((msg as any).createdAt)}</span>
+              </div>
             </div>
           </div>
         ))}
