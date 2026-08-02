@@ -106,19 +106,36 @@ npm run test:watch  # watch mode
 - **No drag-and-drop**: Sections can be reordered via up/down buttons only. A full DnD editor was explicitly listed as optional in the spec.
 - **No version history / undo**: Once a change is applied, it is persisted immediately. Rolling back requires re-prompting the AI.
 
+## Section Library & Layout Variants
+
+Supported sections and layout configurations:
+
+| Section Type | Available Variants | Description |
+|---|---|---|
+| **Navbar** | Standard | Logo, nav links, CTA button |
+| **Hero** | `centered`, `split`, `minimal`, `bold` | Glowing centered, 2-col stats, editorial typography, dark full-bleed |
+| **Features** | `grid`, `alternating`, `list` | 3-column cards, zig-zag row layout, numbered process steps |
+| **Pricing** | `cards`, `compact` | Vertical plan cards, horizontal feature comparison table |
+| **Testimonials**| `grid`, `masonry`, `marquee` | Balanced cards, featured quote layout, infinite auto-scroll |
+| **FAQ** | Accordion | Interactive Q&A list |
+| **CTA** | `contained`, `banner`, `minimal` | High contrast box, full-width inline banner, typographic |
+| **Footer** | Standard | Brand, links, copyright |
+
+## Export Options
+
+Users can export their created landing pages via the header dropdown:
+- **Download HTML**: Single standalone `.html` file with Tailwind CDN & Google Fonts (zero build step needed).
+- **Export JSX (.zip)**: Complete **Vite + React + Tailwind CSS v4** project ready for development (`npm install && npm run dev`).
+
 ## Improvements With More Time
 
-1. **Streaming AI responses** — Use the Vercel AI SDK with `streamObject` to stream JSON patches in real time, giving users instant visual feedback as the page is being built.
+1. **Streaming AI responses** — Use the Vercel AI SDK with `streamObject` to stream JSON patches in real time.
 
-2. **Drag-and-drop reordering** — Integrate `@dnd-kit/core` for a more intuitive section ordering experience.
+2. **Drag-and-drop reordering** — Integrate `@dnd-kit/core` for a mouse-based section reordering experience.
 
-3. **Per-section inline editing** — Click any text in the preview to edit it directly, without going through the chatbot.
+3. **Per-section inline editing** — Click any text in the preview to edit it directly in place.
 
-4. **Version history / undo** — Store every patch as a versioned snapshot so users can step backward through their edit history.
+4. **Version history / undo** — Store every patch as a versioned snapshot for time-travel undo/redo.
 
-5. **More section variants** — Give each section type multiple style variants (e.g. Hero with centered layout vs. split-screen), so the AI can pick the best visual for the context.
-
-6. **Expanded test coverage** — Add integration tests for the API endpoints (mocking Prisma + the Gemini SDK) and component render tests with `@testing-library/react`.
-
-7. **Deployment-aware schema migrations** — Switch from `prisma db push` to `prisma migrate deploy` for safer, tracked schema evolution in production.
+5. **Deployment-aware schema migrations** — Switch from `prisma db push` to `prisma migrate deploy` for production database deployments.
 
