@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
+import { Send, Sparkles, ArrowLeft, Loader2, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -216,9 +216,27 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
     }
   }, [project, router, setIsLoading]);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleStopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsThinking(false);
+    setIsLoading(false);
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: "⏹️ Pembuatan balasan/halaman telah dihentikan." },
+    ]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isThinking) return;
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     const userMessage = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -233,6 +251,7 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
           projectId: project.id,
           message: userMessage.content
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -257,6 +276,10 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
         setTimeout(() => setIsLoading(false), 500);
       }
     } catch (error: any) {
+      if (error.name === "AbortError") {
+        console.log("Fetch request aborted by user");
+        return;
+      }
       console.error(error);
       setMessages((prev) => [
         ...prev,
@@ -264,6 +287,7 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
       ]);
     } finally {
       setIsThinking(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -410,13 +434,24 @@ export function SidebarChat({ project, isLoading, setIsLoading }: { project: any
             disabled={isThinking}
             rows={1}
           />
-          <button
-            type="submit"
-            disabled={!input.trim() || isThinking}
-            className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg disabled:opacity-40 transition-all cursor-pointer shrink-0 ml-2"
-          >
-            {isThinking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </button>
+          {isThinking ? (
+            <button
+              type="button"
+              onClick={handleStopGeneration}
+              title="Hentikan Proses Generasi AI"
+              className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all cursor-pointer shrink-0 ml-2 shadow-sm flex items-center justify-center"
+            >
+              <Square className="w-4 h-4 fill-white text-white" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg disabled:opacity-40 transition-all cursor-pointer shrink-0 ml-2"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          )}
         </form>
       </div>
     </div>

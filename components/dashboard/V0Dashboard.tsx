@@ -161,18 +161,45 @@ export function V0Dashboard({ initialProjects = [] }: { initialProjects?: any[] 
     }
   };
 
-  const toggleFavorite = (projectId: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setFavorites((prev) =>
-      prev.includes(projectId) ? prev.filter((id) => id !== projectId) : [...prev, projectId]
+  useEffect(() => {
+    if (initialProjects && initialProjects.length > 0) {
+      const favIds = initialProjects.filter((p: any) => p.isFavorite).map((p: any) => p.id);
+      setFavorites(favIds);
+    }
+  }, [initialProjects]);
+
+  const toggleFavorite = async (projectId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const target = projects.find((p) => p.id === projectId);
+    const newFavStatus = !(target?.isFavorite || favorites.includes(projectId));
+
+    // Optimistic UI updates
+    setProjects((prev) =>
+      prev.map((p) => (p.id === projectId ? { ...p, isFavorite: newFavStatus } : p))
     );
+    setFavorites((prev) =>
+      newFavStatus ? [...prev, projectId] : prev.filter((id) => id !== projectId)
+    );
+
+    try {
+      await fetch("/api/project/favorite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, isFavorite: newFavStatus }),
+      });
+    } catch (err) {
+      console.error("Failed to update favorite status in DB:", err);
+    }
   };
 
   const filteredProjects = projects.filter((p) =>
     (p.name || "Untitled Project").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const favoriteProjects = projects.filter((p) => favorites.includes(p.id));
+  const favoriteProjects = projects.filter((p) => p.isFavorite || favorites.includes(p.id));
 
   const getTimeAgo = (dateStr: string) => {
     if (!dateStr) return "Just now";
