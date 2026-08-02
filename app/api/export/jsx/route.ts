@@ -183,21 +183,106 @@ export function Pricing({ title, subtitle, plans = [], bgColor, textColor, accen
     case "Testimonials":
       return `import React from 'react';
 
-export function Testimonials({ title, subtitle, items = [], bgColor, textColor, accentColor }) {
+export function Testimonials({ title, subtitle, items = [], bgColor, textColor, variant = 'grid' }) {
+  const safeItems = Array.isArray(items) ? items : [];
+
+  if (variant === 'marquee') {
+    const doubled = [...safeItems, ...safeItems];
+    return (
+      <section className="py-16 sm:py-24 overflow-hidden" style={{ backgroundColor: bgColor || '#0f172a', color: textColor || '#ffffff' }}>
+        <div className="mx-auto max-w-7xl px-6 mb-12 text-center">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{title || 'Trusted by Industry Leaders'}</h2>
+          {subtitle && <p className="text-base opacity-75 mt-2">{subtitle}</p>}
+        </div>
+        <div className="relative flex overflow-hidden mb-6">
+          <div className="flex gap-6 animate-marquee-left whitespace-nowrap">
+            {doubled.map((t, i) => (
+              <div key={i} className="inline-flex flex-col min-w-[300px] sm:min-w-[350px] p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shrink-0">
+                <p className="text-xs sm:text-sm italic leading-relaxed whitespace-normal">"{t.quote}"</p>
+                <div className="mt-4 flex items-center gap-3 pt-3 border-t border-white/10">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
+                    {t.author ? t.author.charAt(0) : 'U'}
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold">{t.author}</span>
+                    {t.role && <span className="text-[10px] opacity-75 ml-1.5">· {t.role}</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="relative flex overflow-hidden">
+          <div className="flex gap-6 animate-marquee-right whitespace-nowrap">
+            {[...doubled].reverse().map((t, i) => (
+              <div key={i} className="inline-flex flex-col min-w-[300px] sm:min-w-[350px] p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shrink-0">
+                <p className="text-xs sm:text-sm italic leading-relaxed whitespace-normal">"{t.quote}"</p>
+                <div className="mt-4 flex items-center gap-3 pt-3 border-t border-white/10">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
+                    {t.author ? t.author.charAt(0) : 'U'}
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold">{t.author}</span>
+                    {t.role && <span className="text-[10px] opacity-75 ml-1.5">· {t.role}</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === 'masonry') {
+    return (
+      <section className="py-20 px-6" style={{ backgroundColor: bgColor || '#0f172a', color: textColor || '#ffffff' }}>
+        <div className="mx-auto max-w-6xl space-y-12">
+          <div className="text-center space-y-3 max-w-3xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{title || 'Trusted by Industry Leaders'}</h2>
+            {subtitle && <p className="text-base opacity-75">{subtitle}</p>}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {safeItems.map((item, idx) => (
+              <figure key={idx} className={\`p-8 rounded-3xl bg-white/10 backdrop-blur-md border border-white/15 shadow-sm space-y-4 \${idx === 0 ? 'sm:col-span-2' : ''}\`}>
+                <blockquote className="text-lg leading-relaxed font-medium">"{item.quote}"</blockquote>
+                <figcaption className="pt-4 flex items-center gap-3 border-t border-white/10">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">
+                    {item.author ? item.author.charAt(0) : 'U'}
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm">{item.author}</div>
+                    {item.role && <div className="text-xs opacity-75">{item.role}</div>}
+                  </div>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Default Grid
   return (
-    <section className="py-20 px-6 overflow-hidden" style={{ backgroundColor: bgColor || '#0f172a', color: textColor || '#ffffff' }}>
+    <section className="py-20 px-6" style={{ backgroundColor: bgColor || '#0f172a', color: textColor || '#ffffff' }}>
       <div className="mx-auto max-w-6xl space-y-12">
         <div className="text-center space-y-3 max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{title || 'Trusted by Industry Leaders'}</h2>
           {subtitle && <p className="text-base opacity-75">{subtitle}</p>}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {(items || []).map((item, idx) => (
-            <div key={idx} className="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-sm space-y-4">
+          {safeItems.map((item, idx) => (
+            <div key={idx} className="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-sm space-y-4 flex flex-col justify-between">
               <p className="text-sm italic leading-relaxed">"{item.quote}"</p>
-              <div className="pt-2 border-t border-white/10">
-                <div className="font-bold text-sm">{item.author}</div>
-                <div className="text-xs opacity-70">{item.role}</div>
+              <div className="pt-3 border-t border-white/10 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">
+                  {item.author ? item.author.charAt(0) : 'U'}
+                </div>
+                <div>
+                  <div className="font-bold text-sm">{item.author}</div>
+                  <div className="text-xs opacity-70">{item.role}</div>
+                </div>
               </div>
             </div>
           ))}
