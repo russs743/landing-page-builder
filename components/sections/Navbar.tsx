@@ -2,9 +2,21 @@ import React from "react";
 import { NavbarProps as BaseNavbarProps } from "@/lib/schema/components";
 import { cn } from "@/lib/utils";
 
+function isDarkColor(color?: string) {
+  if (!color) return false;
+  const hex = color.replace("#", "");
+  if (hex.length !== 6) return false;
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness < 128;
+}
+
 export interface NavbarProps extends BaseNavbarProps {
   bgColor?: string;
   textColor?: string;
+  accentColor?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,7 +25,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   ctaText = "Get Started",
   bgColor,
   textColor,
+  accentColor,
 }) => {
+  const isDarkBg = isDarkColor(bgColor);
+
+  const buttonBg = accentColor || (isDarkBg ? "#ffffff" : "#111827");
+  const buttonTextColor = accentColor ? "#ffffff" : (isDarkBg ? "#111827" : "#ffffff");
+
   return (
     <header
       className={cn("w-full z-30 transition-all", bgColor ? "relative" : "absolute inset-x-0 top-0")}
@@ -27,8 +45,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-2">
           <a href="#" className="flex items-center gap-2">
             <span className="sr-only">{logoText}</span>
-            <div className="h-8 w-8 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center shrink-0">
-              <span className="text-white dark:text-zinc-900 font-bold text-lg leading-none">
+            <div 
+              className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
+              style={{
+                backgroundColor: accentColor || (isDarkBg ? "rgba(255,255,255,0.2)" : "#111827"),
+                color: "#ffffff",
+              }}
+            >
+              <span className="font-bold text-lg leading-none">
                 {logoText.charAt(0)}
               </span>
             </div>
@@ -58,7 +82,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="hidden sm:flex items-center">
             <a
               href="#"
-              className="rounded-full bg-zinc-900 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all hover:scale-105 active:scale-95"
+              className="rounded-full px-5 py-2.5 text-xs sm:text-sm font-bold shadow-md transition-all hover:scale-105 active:scale-95"
+              style={{
+                backgroundColor: buttonBg,
+                color: buttonTextColor,
+              }}
             >
               {ctaText}
             </a>
